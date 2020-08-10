@@ -36,7 +36,7 @@ bincount=5)**
       * **glyphs** – a collection of glyph names
 
       * **category** – the metric (see metric keys in
-         `get_glyph_metrics()`_.)
+         get_glyph_metrics().)
 
       * **bincount** – number of bins to return
 
