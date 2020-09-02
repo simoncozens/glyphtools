@@ -1,3 +1,8 @@
+"""
+glyphtools is a library of routines for extracting information from
+``fontTools`` glyphs.
+"""
+
 import math
 import statistics
 from .ckmeans import ckmeans
@@ -78,16 +83,15 @@ def get_glyph_metrics(font, glyphname):
         font: a ``fontTools`` TTFont object.
         glyphname: name of the glyph.
 
-    Returns:
-        A dictionary with the following keys:
-            width: Advance width of the glyph.
-            lsb: Left side-bearing
-            rsb: Right side-bearing
-            xMin: minimum X coordinate
-            xMax: maximum X coordinate
-            yMin: minimum Y coordinate
-            yMax: maximum Y coordinate
-            rise: difference in Y coordinate between cursive entry and exit
+    Returns: A dictionary with the following keys:
+            - ``width``: Advance width of the glyph.
+            - ``lsb``: Left side-bearing
+            - ``rsb``: Right side-bearing
+            - ``xMin``: minimum X coordinate
+            - ``xMax``: maximum X coordinate
+            - ``yMin``: minimum Y coordinate
+            - ``yMax``: maximum Y coordinate
+            - ``rise``: difference in Y coordinate between cursive entry and exit
     """
     metrics = {
         "width": font["hmtx"][glyphname][0],
@@ -111,7 +115,15 @@ def get_glyph_metrics(font, glyphname):
             )
     else:
         bounds = font.getGlyphSet()[glyphname]._glyph.calcBounds(font.getGlyphSet())
-        metrics["xMin"], metrics["yMin"], metrics["xMax"], metrics["yMax"] = bounds
+        try:
+            metrics["xMin"], metrics["yMin"], metrics["xMax"], metrics["yMax"] = bounds
+        except Exception as e:
+            metrics["xMin"], metrics["xMax"], metrics["yMin"], metrics["yMax"] = (
+                0,
+                0,
+                0,
+                0,
+            )
     metrics["rise"] = get_rise(font, glyphname)
     metrics["rsb"] = metrics["width"] - metrics["xMax"]
     return metrics
