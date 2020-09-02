@@ -1,3 +1,5 @@
+fs
+fontTools[ufo]
 numpy
 beziers
 babelfont
