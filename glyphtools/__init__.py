@@ -13,7 +13,7 @@ import glyphtools.glyphs
 
 __author__ = """Simon Cozens"""
 __email__ = 'simon@simon-cozens.org'
-__version__ = '0.1.0'
+__version__ = '0.2.0'
 
 
 def categorize_glyph(font, glyphname):
