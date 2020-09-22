@@ -14,7 +14,7 @@ glyphtools
         :alt: Documentation Status
 
 
-Routines for extracting information from fontTools glyphs
+Routines for extracting information from font glyphs
 
 
 **glyphtools.bin_glyphs_by_metric(font, glyphs, category,
@@ -31,7 +31,7 @@ bincount=5)**
    the second will contain two. This is usually what you want.
 
    :Parameters:
-      * **font** – a ``fontTools`` TTFont object.
+      * **font** – a ``fontTools`` TTFont object OR a ``glyphsLib`` GSFontMaster object.
 
       * **glyphs** – a collection of glyph names
 
@@ -50,7 +50,7 @@ bincount=5)**
    Returns the category of the given glyph.
 
    :Parameters:
-      * **font** – a ``fontTools`` TTFont object.
+      * **font** – a ``fontTools`` TTFont object OR a ``glyphsLib`` GSFontMaster object.
 
       * **glyphname** – name of the glyph.
 
@@ -72,7 +72,7 @@ offset1=0, 0, offset2=0, 0, maxtuck=0.4)**
    ink further than ``targetdistance`` units away.
 
    :Parameters:
-      * **font** – a ``fontTools`` TTFont object.
+      * **font** – a ``fontTools`` TTFont object OR a ``glyphsLib`` GSFontMaster object.
 
       * **glyph1** – name of the left glyph.
 
@@ -107,7 +107,7 @@ offset1=0, 0, offset2=0, 0, maxtuck=0.4)**
    Returns glyph metrics as a dictionary.
 
    :Parameters:
-      * **font** – a ``fontTools`` TTFont object.
+      * **font** – a ``fontTools`` TTFont object OR a ``glyphsLib`` GSFontMaster object.
 
       * **glyphname** – name of the glyph.
 
@@ -126,7 +126,7 @@ maClass=None)**
    Sets the category of the glyph in the font.
 
    :Parameters:
-      * **font** – a ``fontTools`` TTFont object.
+      * **font** – a ``fontTools`` TTFont object OR a ``glyphsLib`` GSFontMaster object.
 
       * **glyphname** – name of the glyph.
 

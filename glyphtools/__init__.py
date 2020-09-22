@@ -1,6 +1,5 @@
 """
-glyphtools is a library of routines for extracting information from
-``fontTools`` glyphs.
+glyphtools is a library of routines for extracting information from font glyphs.
 """
 
 import math
@@ -9,7 +8,8 @@ from .ckmeans import ckmeans
 from beziers.path import BezierPath
 from beziers.point import Point
 from babelfont.ttf.font import TTFont
-
+from .glyphs import isglyphs
+import glyphtools.glyphs
 
 __author__ = """Simon Cozens"""
 __email__ = 'simon@simon-cozens.org'
@@ -20,7 +20,7 @@ def categorize_glyph(font, glyphname):
     """Returns the category of the given glyph.
 
     Args:
-        font: a ``fontTools`` TTFont object.
+        font: a ``fontTools`` TTFont object OR a ``glyphsLib`` GSFontMaster object.
         glyphname: name of the glyph.
 
     Returns:
@@ -29,6 +29,8 @@ def categorize_glyph(font, glyphname):
         If the glyph is a mark, the second element is the mark attachment
         class number.
     """
+    if glyphs.isglyphs(font):
+        return glyphs.categorize_glyph(font, glyphname)
     gdef = font["GDEF"].table
     classdefs = gdef.GlyphClassDef.classDefs
     if not glyphname in classdefs:
@@ -54,12 +56,13 @@ def set_glyph_category(font, glyphname, category, maClass=None):
     """Sets the category of the glyph in the font.
 
     Args:
-        font: a ``fontTools`` TTFont object.
+        font: a ``fontTools`` TTFont object or a ``glyphsLib`` GSFontMaster object.
         glyphname: name of the glyph.
         category: one of ``base``, ``mark``, ``ligature``, ``component``.
         maClass: If the category is ``base``, the mark attachment class number.
     """
-
+    if isglyphs(font):
+        return set_glyph_category_glyphs(font, glyphname, category)
     gdef = font["GDEF"].table
     classdefs = gdef.GlyphClassDef.classDefs
     if category == "base":
@@ -76,11 +79,11 @@ def set_glyph_category(font, glyphname, category, maClass=None):
         raise ValueError("Unknown category")
 
 
-def get_glyph_metrics(font, glyphname):
+def get_glyph_metrics(font, glyphname, **kwargs):
     """Returns glyph metrics as a dictionary.
 
     Args:
-        font: a ``fontTools`` TTFont object.
+        font: a ``fontTools`` TTFont object or a ``glyphsLib`` GSFontMaster object
         glyphname: name of the glyph.
 
     Returns: A dictionary with the following keys:
@@ -93,6 +96,8 @@ def get_glyph_metrics(font, glyphname):
             - ``yMax``: maximum Y coordinate
             - ``rise``: difference in Y coordinate between cursive entry and exit
     """
+    if isglyphs(font):
+        return glyphs.get_glyph_metrics(font, glyphname, **kwargs)
     metrics = {
         "width": font["hmtx"][glyphname][0],
         "lsb": font["hmtx"][glyphname][1],
@@ -209,7 +214,7 @@ def determine_kern(
     ink further than ``targetdistance`` units away.
 
     Args:
-        font: a ``fontTools`` TTFont object.
+        font: a ``fontTools`` TTFont object or a ``glyphsLib`` GSFontMaster object.
         glyph1: name of the left glyph.
         glyph2: name of the right glyph.
         targetdistance: distance to set the glyphs apart.
@@ -219,10 +224,15 @@ def determine_kern(
 
     Returns: A kerning value, in units.
     """
-    paths1 = BezierPath.fromFonttoolsGlyph(font, glyph1)
-    paths2 = BezierPath.fromFonttoolsGlyph(font, glyph2)
+    if isglyphs(font):
+        paths1 = glyphs.beziers(font, glyph1)
+        paths2 = glyphs.beziers(font, glyph2)
+    else:
+        paths1 = BezierPath.fromFonttoolsGlyph(font, glyph1)
+        paths2 = BezierPath.fromFonttoolsGlyph(font, glyph2)
+    metrics1 = get_glyph_metrics(font, glyph1)
     offset1 = Point(*offset1)
-    offset2 = Point(offset2[0] + font["hmtx"][glyph1][0], offset2[1])
+    offset2 = Point(offset2[0] + metrics1["width"], offset2[1])
     kern = 0
     lastBest = None
 
@@ -249,9 +259,9 @@ def determine_kern(
         kern = kern + (targetdistance - minDistance)
 
     if maxtuck:
-        kern = max(kern, -(font["hmtx"][glyph1][0] * maxtuck))
+        kern = max(kern, -(metrics1["width"] * maxtuck))
     else:
-        kern = max(kern, -(font["hmtx"][glyph1][0]))
+        kern = max(kern, -(metrics1["width"]))
     return int(kern)
 
 
