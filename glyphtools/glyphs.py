@@ -2,7 +2,7 @@ from beziers.path import BezierPath
 
 
 def isglyphs(fontmaster):
-    return hasattr(fontmaster, "font")
+    return hasattr(fontmaster, "userData")
 
 
 def categorize_glyph(fontmaster, glyphname):
@@ -29,14 +29,23 @@ def set_glyph_category(fontmaster, glyphname, category):
 
 
 def get_glyph_metrics(fontmaster, glyphname):
-    layer = fontmaster.font.glyphs[glyphname].layers[fontmaster.id]
+    glyph = fontmaster.font.glyphs[glyphname]
+    layer = glyph.layers[fontmaster.id]
     metrics = {"width": layer.width}
+    # If it's a nonspacing mark then its advance width is really zero
+    if glyph.subCategory == "Nonspacing":
+        metrics["width"] = 0
+
     bounds = layer.bounds
-    metrics["lsb"] = bounds.origin.x
-    metrics["xMin"] = bounds.origin.x  # That doesn't look right
-    metrics["yMin"] = bounds.origin.y
-    metrics["xMax"] = bounds.origin.x + bounds.size.width
-    metrics["yMax"] = bounds.origin.y + bounds.size.height
+    if bounds:
+        metrics["lsb"] = bounds.origin.x
+        metrics["xMin"] = bounds.origin.x  # That doesn't look right
+        metrics["yMin"] = bounds.origin.y
+        metrics["xMax"] = bounds.origin.x + bounds.size.width
+        metrics["yMax"] = bounds.origin.y + bounds.size.height
+    else:
+        metrics["lsb"], metrics["xMin"], metrics["xMax"] = 0,0,0
+        metrics["yMin"], metrics["yMax"] = 0,0
     metrics["rsb"] = metrics["width"] - metrics["xMax"]
     metrics["rise"] = get_rise(fontmaster, glyphname)
     return metrics
