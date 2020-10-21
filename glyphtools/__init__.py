@@ -98,10 +98,18 @@ def get_glyph_metrics(font, glyphname, **kwargs):
     """
     if isglyphs(font):
         return glyphs.get_glyph_metrics(font, glyphname, **kwargs)
-    metrics = {
-        "width": font["hmtx"][glyphname][0],
-        "lsb": font["hmtx"][glyphname][1],
-    }
+    metrics = {}
+    if "hmtx" in font:
+        metrics = {
+            "width": font["hmtx"][glyphname][0],
+            "lsb": font["hmtx"][glyphname][1],
+        }
+    else:
+        warnings.warn("No hmtx table in this font!")
+        metrics = {
+            "width": font["head"].unitsPerEm,
+            "lsb": 0
+        }
     if "glyf" in font:
         glyf = font["glyf"][glyphname]
         try:
