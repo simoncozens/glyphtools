@@ -15,7 +15,7 @@ import warnings
 
 __author__ = """Simon Cozens"""
 __email__ = 'simon@simon-cozens.org'
-__version__ = '0.3.0'
+__version__ = '0.4.0'
 
 
 def categorize_glyph(font, glyphname):
