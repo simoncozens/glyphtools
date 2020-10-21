@@ -10,6 +10,8 @@ from beziers.point import Point
 from babelfont.ttf.font import TTFont
 from .glyphs import isglyphs
 import glyphtools.glyphs
+import warnings
+
 
 __author__ = """Simon Cozens"""
 __email__ = 'simon@simon-cozens.org'
