@@ -7,10 +7,10 @@ import statistics
 from .ckmeans import ckmeans
 from beziers.path import BezierPath
 from beziers.point import Point
-from babelfont.ttf.font import TTFont
-from .glyphs import isglyphs
 import glyphtools.glyphs
+import glyphtools.babelfont
 import warnings
+from beziers.path.representations.fontparts import FontParts
 
 
 __author__ = """Simon Cozens"""
@@ -22,7 +22,7 @@ def categorize_glyph(font, glyphname):
     """Returns the category of the given glyph.
 
     Args:
-        font: a ``fontTools`` TTFont object OR a ``glyphsLib`` GSFontMaster object.
+        font: a ``fontTools`` TTFont object OR a ``glyphsLib`` GSFontMaster object OR a ``babelfont`` Font object.
         glyphname: name of the glyph.
 
     Returns:
@@ -33,6 +33,8 @@ def categorize_glyph(font, glyphname):
     """
     if glyphs.isglyphs(font):
         return glyphs.categorize_glyph(font, glyphname)
+    if babelfont.isbabelfont(font):
+        return (font[glyphname].category, None)
     gdef = font["GDEF"].table
     classdefs = gdef.GlyphClassDef.classDefs
     if not glyphname in classdefs:
@@ -58,13 +60,17 @@ def set_glyph_category(font, glyphname, category, maClass=None):
     """Sets the category of the glyph in the font.
 
     Args:
-        font: a ``fontTools`` TTFont object or a ``glyphsLib`` GSFontMaster object.
+        font: a ``fontTools`` TTFont object or a ``glyphsLib`` GSFontMaster object OR a ``babelfont`` Font object.
         glyphname: name of the glyph.
         category: one of ``base``, ``mark``, ``ligature``, ``component``.
         maClass: If the category is ``base``, the mark attachment class number.
     """
-    if isglyphs(font):
-        return set_glyph_category_glyphs(font, glyphname, category)
+    if glyphs.isglyphs(font):
+        return glyphs.set_glyph_category(font, glyphname, category)
+    if babelfont.isbabelfont(font):
+        font[glyphname].category = category
+        return
+
     gdef = font["GDEF"].table
     classdefs = gdef.GlyphClassDef.classDefs
     if category == "base":
@@ -85,7 +91,7 @@ def get_glyph_metrics(font, glyphname, **kwargs):
     """Returns glyph metrics as a dictionary.
 
     Args:
-        font: a ``fontTools`` TTFont object or a ``glyphsLib`` GSFontMaster object
+        font: a ``fontTools`` TTFont object or a ``glyphsLib`` GSFontMaster object OR a ``babelfont`` Font object.
         glyphname: name of the glyph.
 
     Returns: A dictionary with the following keys:
@@ -98,8 +104,10 @@ def get_glyph_metrics(font, glyphname, **kwargs):
             - ``yMax``: maximum Y coordinate
             - ``rise``: difference in Y coordinate between cursive entry and exit
     """
-    if isglyphs(font):
+    if glyphs.isglyphs(font):
         return glyphs.get_glyph_metrics(font, glyphname, **kwargs)
+    if babelfont.isbabelfont(font):
+        return babelfont.get_glyph_metrics(font, glyphname, **kwargs)
     metrics = {}
     if "hmtx" in font:
         metrics = {
@@ -182,7 +190,7 @@ def bin_glyphs_by_metric(font, glyphs, category, bincount=5):
     usually what you want.
 
     Args:
-        font: a ``fontTools`` TTFont object.
+        font: a ``fontTools`` TTFont object or a ``glyphsLib`` GSFontMaster object OR a ``babelfont`` Font object.
         glyphs: a collection of glyph names
         category: the metric (see metric keys in :func:`get_glyph_metrics`.)
         bincount: number of bins to return
@@ -224,7 +232,7 @@ def determine_kern(
     ink further than ``targetdistance`` units away.
 
     Args:
-        font: a ``fontTools`` TTFont object or a ``glyphsLib`` GSFontMaster object.
+        font: a ``fontTools`` TTFont object or a ``glyphsLib`` GSFontMaster object OR a ``babelfont`` Font object.
         glyph1: name of the left glyph.
         glyph2: name of the right glyph.
         targetdistance: distance to set the glyphs apart.
@@ -234,9 +242,12 @@ def determine_kern(
 
     Returns: A kerning value, in units.
     """
-    if isglyphs(font):
+    if glyphs.isglyphs(font):
         paths1 = glyphs.beziers(font, glyph1)
         paths2 = glyphs.beziers(font, glyph2)
+    elif glyphs.isbeziers(font):
+        paths1 = FontParts.fromFontpartsGlyph(font[glyph1])
+        paths2 = FontParts.fromFontpartsGlyph(font[glyph2])
     else:
         paths1 = BezierPath.fromFonttoolsGlyph(font, glyph1)
         paths2 = BezierPath.fromFonttoolsGlyph(font, glyph2)
@@ -275,15 +286,14 @@ def determine_kern(
     return int(kern)
 
 
-def duplicate_glyph(font, existing, new):
+def duplicate_glyph(babelfont, existing, new):
     """Add a new glyph to the font duplicating an existing one.
 
     Args:
-        font: a ``fontTools`` TTFont object.
+        font: a ``babelfont``/``fontParts`` Font object.
         existing: name of the glyph to duplicate.
         new: name of the glyph to add.
     """
-    babelfont = TTFont(font)
     existingGlyph = babelfont.layers[0][existing]
     newGlyph = babelfont.layers[0].newGlyph(new)
 
@@ -292,5 +302,5 @@ def duplicate_glyph(font, existing, new):
     for c in existingGlyph.components:
         newGlyph.appendComponent(c)
     newGlyph.width = existingGlyph.width
-    oldCategory = categorize_glyph(font, existing)
+    oldCategory = babelfont[existing].category # babelfont only
     set_glyph_category(font, new, oldCategory[0], oldCategory[1])
