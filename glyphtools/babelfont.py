@@ -5,7 +5,11 @@ def isbabelfont(font):
 def get_glyph_metrics(font, glyphname):
     g = font[glyphname]
     metrics = {"width": g.width, "lsb": g.leftMargin, "rsb": g.rightMargin}
-    (metrics["xMin"], metrics["yMin"], metrics["xMax"], metrics["yMax"]) = g.bounds
+    bounds = g.bounds
+    if bounds:
+        (metrics["xMin"], metrics["yMin"], metrics["xMax"], metrics["yMax"]) = g.bounds
+    else:
+        (metrics["xMin"], metrics["yMin"], metrics["xMax"], metrics["yMax"]) = (0,0,0,0)
     metrics["rise"] = get_rise(g)
     return metrics
 
