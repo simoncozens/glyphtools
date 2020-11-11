@@ -15,7 +15,7 @@ from beziers.path.representations.fontparts import FontParts
 
 __author__ = """Simon Cozens"""
 __email__ = 'simon@simon-cozens.org'
-__version__ = '0.5.1'
+__version__ = '0.5.2'
 
 
 def categorize_glyph(font, glyphname):
