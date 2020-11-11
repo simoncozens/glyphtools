@@ -35,6 +35,8 @@ def categorize_glyph(font, glyphname):
         return glyphs.categorize_glyph(font, glyphname)
     if babelfont.isbabelfont(font):
         return (font[glyphname].category, None)
+    if not "GDEF" in font:
+        return ("unknown", None)
     gdef = font["GDEF"].table
     classdefs = gdef.GlyphClassDef.classDefs
     if not glyphname in classdefs:
