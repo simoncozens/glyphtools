@@ -240,7 +240,7 @@ def bin_dictionary(d, bincount=5):
     justvalues = d.values()
     if bincount > len(d.keys()):
         bincount = len(d.keys())
-    clusters = ckmeans(justvalues, bincount)
+    clusters = ckmeans(list(justvalues), bincount)
     binned = []
     for c in clusters:
         thiscluster = []
