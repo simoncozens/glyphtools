@@ -159,6 +159,41 @@ def get_rise(font, glyphname, **kwargs):
     if glyphtools.babelfont.isbabelfont(font):
         return glyphtools.get_rise(font, glyphname, **kwargs)
     # Find a cursive positioning feature or it's game over
+    if "GPOS" not in font:
+        return 0
+    cursives = filter(lambda x: x.LookupType == 3, font["GPOS"].table.LookupList.Lookup)
+    entry, exit = None, None
+    for c in cursives:
+        for s in c.SubTable:
+            for glyph, record in zip(s.Coverage.glyphs, s.EntryExitRecord):
+                if glyph != glyphname:
+                    continue
+                if record.EntryAnchor:
+                    entry = (
+                        record.EntryAnchor.XCoordinate,
+                        record.EntryAnchor.YCoordinate,
+                    )
+                if record.ExitAnchor:
+                    exit = (
+                        record.ExitAnchor.XCoordinate,
+                        record.ExitAnchor.YCoordinate,
+                    )
+    if not entry and not exit:
+        return 0
+    if entry and not exit:
+        return entry[1]
+    if exit and not entry:
+        return 0
+    return entry[1] - exit[1]
+
+
+def get_run(font, glyphname, **kwargs):
+    """Return the Arabic run of the glyph (X difference between entry and exit)."""
+    if glyphtools.glyphs.isglyphs(font):
+        return glyphtools.glyphs.get_run(font, glyphname, **kwargs)
+    if glyphtools.babelfont.isbabelfont(font):
+        return glyphtools.get_run(font, glyphname, **kwargs)
+    # Find a cursive positioning feature or it's game over
     width = font["hmtx"][glyphname][0]
     if "GPOS" not in font:
         return width
@@ -186,37 +221,6 @@ def get_rise(font, glyphname, **kwargs):
     if exit and not entry:
         return width - exit[0]
     return entry[0] - exit[0]
-
-
-def get_run(font, glyphname, **kwargs):
-    """Return the Arabic run of the glyph (X difference between entry and exit)."""
-    if glyphtools.glyphs.isglyphs(font):
-        return glyphtools.glyphs.get_run(font, glyphname, **kwargs)
-    if glyphtools.babelfont.isbabelfont(font):
-        return glyphtools.get_run(font, glyphname, **kwargs)
-    # Find a cursive positioning feature or it's game over
-    if "GPOS" not in font:
-        return 0
-    cursives = filter(lambda x: x.LookupType == 3, font["GPOS"].table.LookupList.Lookup)
-    anchors = {}
-    entry, exit = None
-    for c in cursives:
-        for s in c.SubTable:
-            for glyph, record in zip(s.Coverage.glyphs, s.EntryExitRecord):
-                anchors[glyph] = []
-                if record.EntryAnchor:
-                    anchors[glyph].append(
-                        (record.EntryAnchor.XCoordinate, record.EntryAnchor.YCoordinate)
-                    )
-                if record.ExitAnchor:
-                    anchors[glyph].append(
-                        (record.ExitAnchor.XCoordinate, record.ExitAnchor.YCoordinate)
-                    )
-    if glyphname not in anchors:
-        return 0
-    if len(anchors[glyphname]) == 1:
-        return anchors[glyphname][0][1]
-    return anchors[glyphname][0][1] - anchors[glyphname][1][1]
 
 
 def bin_dictionary(d, bincount=5):
