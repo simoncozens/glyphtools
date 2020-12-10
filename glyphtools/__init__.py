@@ -1,8 +1,5 @@
-"""
-glyphtools is a library of routines for extracting information from font glyphs.
-"""
+"""glyphtools is a set of routines for extracting information from font glyphs."""
 
-import math
 import statistics
 from .ckmeans import ckmeans
 from beziers.path import BezierPath
@@ -14,15 +11,16 @@ from beziers.path.representations.fontparts import FontParts
 
 
 __author__ = """Simon Cozens"""
-__email__ = 'simon@simon-cozens.org'
-__version__ = '0.5.2'
+__email__ = "simon@simon-cozens.org"
+__version__ = "0.5.2"
 
 
 def categorize_glyph(font, glyphname):
-    """Returns the category of the given glyph.
+    """Return the category of the given glyph.
 
     Args:
-        font: a ``fontTools`` TTFont object OR a ``glyphsLib`` GSFontMaster object OR a ``babelfont`` Font object.
+        font: a ``fontTools`` TTFont object OR a ``glyphsLib`` GSFontMaster
+            object OR a ``babelfont`` Font object.
         glyphname: name of the glyph.
 
     Returns:
@@ -31,15 +29,15 @@ def categorize_glyph(font, glyphname):
         If the glyph is a mark, the second element is the mark attachment
         class number.
     """
-    if glyphs.isglyphs(font):
-        return glyphs.categorize_glyph(font, glyphname)
-    if babelfont.isbabelfont(font):
+    if glyphtools.glyphs.isglyphs(font):
+        return glyphtools.glyphs.categorize_glyph(font, glyphname)
+    if glyphtools.babelfont.isbabelfont(font):
         return (font[glyphname].category, None)
-    if not "GDEF" in font:
+    if "GDEF" not in font:
         return ("unknown", None)
     gdef = font["GDEF"].table
     classdefs = gdef.GlyphClassDef.classDefs
-    if not glyphname in classdefs:
+    if glyphname not in classdefs:
         return ("unknown", None)
     if classdefs[glyphname] == 1:
         return ("base", None)
@@ -49,9 +47,9 @@ def categorize_glyph(font, glyphname):
         # Now find attachment class
         mclass = None
         if gdef.MarkAttachClassDef:
-            markAttachClassDef = gdef.MarkAttachClassDef.classDefs
-            if glyphname in markAttachClassDef:
-                mclass = markAttachClassDef[glyphname]
+            classdef = gdef.MarkAttachClassDef.classDefs
+            if glyphname in classdef:
+                mclass = classdef[glyphname]
         return ("mark", mclass)
     if classdefs[glyphname] == 4:
         return ("component", None)
@@ -59,17 +57,18 @@ def categorize_glyph(font, glyphname):
 
 
 def set_glyph_category(font, glyphname, category, maClass=None):
-    """Sets the category of the glyph in the font.
+    """Set the category of the glyph in the font.
 
     Args:
-        font: a ``fontTools`` TTFont object or a ``glyphsLib`` GSFontMaster object OR a ``babelfont`` Font object.
+        font: a ``fontTools`` TTFont object or a ``glyphsLib`` GSFontMaster
+              object OR a ``babelfont`` Font object.
         glyphname: name of the glyph.
         category: one of ``base``, ``mark``, ``ligature``, ``component``.
         maClass: If the category is ``base``, the mark attachment class number.
     """
-    if glyphs.isglyphs(font):
-        return glyphs.set_glyph_category(font, glyphname, category)
-    if babelfont.isbabelfont(font):
+    if glyphtools.glyphs.isglyphs(font):
+        return glyphtools.glyphs.set_glyph_category(font, glyphname, category)
+    if glyphtools.babelfont.isbabelfont(font):
         font[glyphname].category = category
         return
 
@@ -90,10 +89,11 @@ def set_glyph_category(font, glyphname, category, maClass=None):
 
 
 def get_glyph_metrics(font, glyphname, **kwargs):
-    """Returns glyph metrics as a dictionary.
+    """Return glyph metrics as a dictionary.
 
     Args:
-        font: a ``fontTools`` TTFont object or a ``glyphsLib`` GSFontMaster object OR a ``babelfont`` Font object.
+        font: a ``fontTools`` TTFont object or a ``glyphsLib`` GSFontMaster
+              object OR a ``babelfont`` Font object.
         glyphname: name of the glyph.
 
     Returns: A dictionary with the following keys:
@@ -106,10 +106,10 @@ def get_glyph_metrics(font, glyphname, **kwargs):
             - ``yMax``: maximum Y coordinate
             - ``rise``: difference in Y coordinate between cursive entry and exit
     """
-    if glyphs.isglyphs(font):
-        return glyphs.get_glyph_metrics(font, glyphname, **kwargs)
-    if babelfont.isbabelfont(font):
-        return babelfont.get_glyph_metrics(font, glyphname, **kwargs)
+    if glyphtools.glyphs.isglyphs(font):
+        return glyphtools.glyphs.get_glyph_metrics(font, glyphname, **kwargs)
+    if glyphtools.babelfont.isbabelfont(font):
+        return glyphtools.babelfont.get_glyph_metrics(font, glyphname, **kwargs)
     metrics = {}
     if "hmtx" in font:
         metrics = {
@@ -118,10 +118,7 @@ def get_glyph_metrics(font, glyphname, **kwargs):
         }
     else:
         warnings.warn("No hmtx table in this font!")
-        metrics = {
-            "width": font["head"].unitsPerEm,
-            "lsb": 0
-        }
+        metrics = {"width": font["head"].unitsPerEm, "lsb": 0}
     if "glyf" in font:
         glyf = font["glyf"][glyphname]
         try:
@@ -131,7 +128,7 @@ def get_glyph_metrics(font, glyphname, **kwargs):
                 glyf.yMin,
                 glyf.yMax,
             )
-        except Exception as e:
+        except Exception:
             metrics["xMin"], metrics["xMax"], metrics["yMin"], metrics["yMax"] = (
                 0,
                 0,
@@ -142,7 +139,7 @@ def get_glyph_metrics(font, glyphname, **kwargs):
         bounds = font.getGlyphSet()[glyphname]._glyph.calcBounds(font.getGlyphSet())
         try:
             metrics["xMin"], metrics["yMin"], metrics["xMax"], metrics["yMax"] = bounds
-        except Exception as e:
+        except Exception:
             metrics["xMin"], metrics["xMax"], metrics["yMin"], metrics["yMax"] = (
                 0,
                 0,
@@ -150,17 +147,59 @@ def get_glyph_metrics(font, glyphname, **kwargs):
                 0,
             )
     metrics["rise"] = get_rise(font, glyphname)
+    metrics["run"] = get_run(font, glyphname)
     metrics["rsb"] = metrics["width"] - metrics["xMax"]
     return metrics
 
 
-def get_rise(font, glyphname):
+def get_rise(font, glyphname, **kwargs):
+    """Return the Arabic rise of the glyph (Y difference between entry and exit)."""
+    if glyphtools.glyphs.isglyphs(font):
+        return glyphtools.glyphs.get_rise(font, glyphname, **kwargs)
+    if glyphtools.babelfont.isbabelfont(font):
+        return glyphtools.get_rise(font, glyphname, **kwargs)
+    # Find a cursive positioning feature or it's game over
+    width = font["hmtx"][glyphname][0]
+    if "GPOS" not in font:
+        return width
+    cursives = filter(lambda x: x.LookupType == 3, font["GPOS"].table.LookupList.Lookup)
+    entry, exit = None, None
+    for c in cursives:
+        for s in c.SubTable:
+            for glyph, record in zip(s.Coverage.glyphs, s.EntryExitRecord):
+                if glyph != glyphname:
+                    continue
+                if record.EntryAnchor:
+                    entry = (
+                        record.EntryAnchor.XCoordinate,
+                        record.EntryAnchor.YCoordinate,
+                    )
+                if record.ExitAnchor:
+                    exit = (
+                        record.ExitAnchor.XCoordinate,
+                        record.ExitAnchor.YCoordinate,
+                    )
+    if not entry and not exit:
+        return width
+    if entry and not exit:
+        return entry[0]
+    if exit and not entry:
+        return width - exit[0]
+    return entry[0] - exit[0]
+
+
+def get_run(font, glyphname, **kwargs):
+    """Return the Arabic run of the glyph (X difference between entry and exit)."""
+    if glyphtools.glyphs.isglyphs(font):
+        return glyphtools.glyphs.get_run(font, glyphname, **kwargs)
+    if glyphtools.babelfont.isbabelfont(font):
+        return glyphtools.get_run(font, glyphname, **kwargs)
     # Find a cursive positioning feature or it's game over
     if "GPOS" not in font:
         return 0
-    t = font["GPOS"].table
     cursives = filter(lambda x: x.LookupType == 3, font["GPOS"].table.LookupList.Lookup)
     anchors = {}
+    entry, exit = None
     for c in cursives:
         for s in c.SubTable:
             for glyph, record in zip(s.Coverage.glyphs, s.EntryExitRecord):
@@ -180,40 +219,30 @@ def get_rise(font, glyphname):
     return anchors[glyphname][0][1] - anchors[glyphname][1][1]
 
 
-def bin_glyphs_by_metric(font, glyphs, category, bincount=5):
-    """Organise glyphs according to a given metric.
+def bin_dictionary(d, bincount=5):
+    """Organise a dictionary into a number of bins.
 
-    Organises similar glyphs into a number of bins. The bins are not
-    guaranteed to contain the same number of glyphs; the one-dimensional
-    ckmeans clustering algorithm is used to cluster glyphs based on metric
-    similarity. For example, if there are five glyphs of width 100, 102, 105,
-    210, and 220 units respectively, and you ask for two bins, the first
-    bin will contain three glyphs and the second will contain two. This is
-    usually what you want.
+    The bins are not guaranteed to contain the same number of entries; the
+    one-dimensional ckmeans clustering algorithm is used to cluster entries
+    based on value similarity. For example, if there are five entries in the
+    dictionary with values of 100, 102, 105, 210, and 220 respectively, and
+    you ask for two bins, the first bin will contain three entries and the
+    second will contain two. This is usually what you want.
 
-    Args:
-        font: a ``fontTools`` TTFont object or a ``glyphsLib`` GSFontMaster object OR a ``babelfont`` Font object.
-        glyphs: a collection of glyph names
-        category: the metric (see metric keys in :func:`get_glyph_metrics`.)
-        bincount: number of bins to return
-
-    Returns:
-        A list of ``bincount`` two-element tuples. The first element is a
-        list of glyphnames in this bin; the second is the average metric
-        value of the glyphs in this bin.
+    Returns: An list ``bincount`` two-element tuples. The first element is a
+        list of dictionary keys in this bin; the second is the average
+        value of the items in this bin.
     """
-
-    metrics = [(g, get_glyph_metrics(font, g)[category]) for g in glyphs]
-    justmetrics = [x[1] for x in metrics]
-    if bincount > len(glyphs):
-        bincount = len(glyphs)
-    clusters = ckmeans(justmetrics, bincount)
+    justvalues = d.values()
+    if bincount > len(d.keys()):
+        bincount = len(d.keys())
+    clusters = ckmeans(justvalues, bincount)
     binned = []
     for c in clusters:
         thiscluster = []
-        for m in metrics:
-            if m[1] in c:
-                thiscluster.append(m)
+        for k, v in d.items():
+            if v in c:
+                thiscluster.append((k, v))
         thiscluster = (
             [x[0] for x in thiscluster],
             int(statistics.mean([x[1] for x in thiscluster])),
@@ -222,11 +251,49 @@ def bin_glyphs_by_metric(font, glyphs, category, bincount=5):
     return binned
 
 
+def bin_glyphs_by_metric(font, glyphs, category, bincount=5):
+    """Organise glyphs according to a given metric.
+
+    Organises similar glyphs into a number of bins. See documentation for
+    :func:`bin_dictionary` above.
+
+    Args:
+        font: a ``fontTools`` TTFont object or a ``glyphsLib`` GSFontMaster
+              object OR a ``babelfont`` Font object.
+        glyphs: a collection of glyph names
+        category: the metric (see metric keys in :func:`get_glyph_metrics`.)
+        bincount: number of bins to return
+
+    Returns:
+        A list of
+    """
+    metrics = {g: get_glyph_metrics(font, g)[category] for g in glyphs}
+    return bin_dictionary(metrics, bincount)
+
+
+def get_beziers(font, glyph):
+    """Return the glyph as a set of ``beziers.BezierPath`` objects.
+
+    Args:
+        font: a ``fontTools`` TTFont object or a ``glyphsLib`` GSFontMaster
+              object OR a ``babelfont`` Font object.
+        glyph: name of the glyph.
+
+    Returns: A list of ``BezierPath`` objects.
+
+    """
+    if glyphtools.glyphs.isglyphs(font):
+        return glyphtools.glyphs.beziers(font, glyph)
+    elif glyphtools.babelfont.isbabelfont(font):
+        return FontParts.fromFontpartsGlyph(font[glyph])
+    else:
+        return BezierPath.fromFonttoolsGlyph(font, glyph)
+
+
 def determine_kern(
     font, glyph1, glyph2, targetdistance, offset1=(0, 0), offset2=(0, 0), maxtuck=0.4
 ):
-    """Determine a kerning value required to set two glyphs at given
-    ink-to-ink distance.
+    """Determine a kerning value required to set two glyphs at given ink-to-ink distance.
 
     The value is bounded by the ``maxtuck`` parameter. For example, if
     ``maxtuck`` is 0.20, the right glyph will not be placed any further
@@ -234,7 +301,8 @@ def determine_kern(
     ink further than ``targetdistance`` units away.
 
     Args:
-        font: a ``fontTools`` TTFont object or a ``glyphsLib`` GSFontMaster object OR a ``babelfont`` Font object.
+        font: a ``fontTools`` TTFont object or a ``glyphsLib`` GSFontMaster
+              object OR a ``babelfont`` Font object.
         glyph1: name of the left glyph.
         glyph2: name of the right glyph.
         targetdistance: distance to set the glyphs apart.
@@ -244,42 +312,33 @@ def determine_kern(
 
     Returns: A kerning value, in units.
     """
-    if glyphs.isglyphs(font):
-        paths1 = glyphs.beziers(font, glyph1)
-        paths2 = glyphs.beziers(font, glyph2)
-    elif glyphs.isbeziers(font):
-        paths1 = FontParts.fromFontpartsGlyph(font[glyph1])
-        paths2 = FontParts.fromFontpartsGlyph(font[glyph2])
-    else:
-        paths1 = BezierPath.fromFonttoolsGlyph(font, glyph1)
-        paths2 = BezierPath.fromFonttoolsGlyph(font, glyph2)
+    paths1 = get_beziers(font, glyph1)
+    paths2 = get_beziers(font, glyph2)
     metrics1 = get_glyph_metrics(font, glyph1)
     offset1 = Point(*offset1)
     offset2 = Point(offset2[0] + metrics1["width"], offset2[1])
     kern = 0
-    lastBest = None
+    last_best = None
 
     iterations = 0
     while True:
         # Compute min distance
-        minDistance = None
-        closestpaths = None
+        min_distance = None
         for p1 in paths1:
             p1 = p1.clone().translate(offset1)
             for p2 in paths2:
                 p2 = p2.clone().translate(Point(offset2.x + kern, offset2.y))
                 d = p1.distanceToPath(p2, samples=3)
-                if not minDistance or d[0] < minDistance:
-                    minDistance = d[0]
-                    closestsegs = (d[3], d[4])
-        if not lastBest or minDistance < lastBest:
-            lastBest = minDistance
+                if not min_distance or d[0] < min_distance:
+                    min_distance = d[0]
+        if not last_best or min_distance < last_best:
+            last_best = min_distance
         else:
             break  # Nothing helped
-        if abs(minDistance - targetdistance) < 1 or iterations > 10:
+        if abs(min_distance - targetdistance) < 1 or iterations > 10:
             break
         iterations = iterations + 1
-        kern = kern + (targetdistance - minDistance)
+        kern = kern + (targetdistance - min_distance)
 
     if maxtuck:
         kern = max(kern, -(metrics1["width"] * maxtuck))
@@ -296,13 +355,13 @@ def duplicate_glyph(babelfont, existing, new):
         existing: name of the glyph to duplicate.
         new: name of the glyph to add.
     """
-    existingGlyph = babelfont.layers[0][existing]
-    newGlyph = babelfont.layers[0].newGlyph(new)
+    existing_glyph = glyphtools.layers[0][existing]
+    new_glyph = glyphtools.layers[0].newGlyph(new)
 
-    for c in existingGlyph.contours:
-        newGlyph.appendContour(c)
-    for c in existingGlyph.components:
-        newGlyph.appendComponent(c)
-    newGlyph.width = existingGlyph.width
-    oldCategory = babelfont[existing].category # babelfont only
-    set_glyph_category(font, new, oldCategory[0], oldCategory[1])
+    for c in existing_glyph.contours:
+        new_glyph.appendContour(c)
+    for c in existing_glyph.components:
+        new_glyph.appendComponent(c)
+    new_glyph.width = existing_glyph.width
+    old_category = babelfont[existing].category  # babelfont only
+    set_glyph_category(babelfont, new, old_category[0], old_category[1])

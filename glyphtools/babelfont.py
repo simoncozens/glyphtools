@@ -11,6 +11,7 @@ def get_glyph_metrics(font, glyphname):
     else:
         (metrics["xMin"], metrics["yMin"], metrics["xMax"], metrics["yMax"]) = (0,0,0,0)
     metrics["rise"] = get_rise(g)
+    metrics["run"] = get_run(g)
     return metrics
 
 
@@ -18,6 +19,14 @@ def get_rise(glyph):
     entry = [a.y for a in glyph.anchors if a.name == "entry"]
     entry.append(0)  # In case there isn't one
     exit = [a.y for a in glyph.anchors if a.name == "exit"]
+    exit.append(0)
+
+    return entry[0] - exit[0]
+
+def get_run(glyph):
+    entry = [a.x for a in glyph.anchors if a.name == "entry"]
+    entry.append(glyph.width)  # In case there isn't one
+    exit = [a.x for a in glyph.anchors if a.name == "exit"]
     exit.append(0)
 
     return entry[0] - exit[0]

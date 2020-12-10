@@ -48,6 +48,7 @@ def get_glyph_metrics(fontmaster, glyphname):
         metrics["yMin"], metrics["yMax"] = 0,0
     metrics["rsb"] = metrics["width"] - metrics["xMax"]
     metrics["rise"] = get_rise(fontmaster, glyphname)
+    metrics["run"] = get_run(fontmaster, glyphname)
     return metrics
 
 
@@ -60,6 +61,15 @@ def get_rise(fontmaster, glyphname):
     entry = layer.anchors["entry"] or GSAnchor("entry", Point(0, 0))
     exit = layer.anchors["exit"] or GSAnchor("exit", Point(0, 0))
     return entry.position.y - exit.position.y
+
+def get_run(fontmaster, glyphname):
+    from glyphsLib import GSAnchor
+    from glyphsLib.types import Point
+    layer = fontmaster.font.glyphs[glyphname].layers[fontmaster.id]
+    entry = layer.anchors["entry"] or GSAnchor("entry", Point(layer.width, 0))
+    exit = layer.anchors["exit"] or GSAnchor("exit", Point(0, 0))
+    return entry.position.x - exit.position.x
+
 
 
 def beziers(fontmaster, glyphname):
