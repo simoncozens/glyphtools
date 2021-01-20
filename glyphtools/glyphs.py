@@ -49,6 +49,7 @@ def get_glyph_metrics(fontmaster, glyphname):
     metrics["rsb"] = metrics["width"] - metrics["xMax"]
     metrics["rise"] = get_rise(fontmaster, glyphname)
     metrics["run"] = get_run(fontmaster, glyphname)
+    metrics["fullwidth"] = metrics["xMax"] - metrics["xMin"]
     return metrics
 
 

@@ -12,6 +12,7 @@ def get_glyph_metrics(font, glyphname):
         (metrics["xMin"], metrics["yMin"], metrics["xMax"], metrics["yMax"]) = (0,0,0,0)
     metrics["rise"] = get_rise(g)
     metrics["run"] = get_run(g)
+    metrics["fullwidth"] = metrics["xMax"] - metrics["xMin"]
     return metrics
 
 

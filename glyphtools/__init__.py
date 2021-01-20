@@ -104,6 +104,7 @@ def get_glyph_metrics(font, glyphname, **kwargs):
             - ``xMax``: maximum X coordinate
             - ``yMin``: minimum Y coordinate
             - ``yMax``: maximum Y coordinate
+            - ``fullwidth``: xMax - xMin
             - ``rise``: difference in Y coordinate between cursive entry and exit
     """
     if glyphtools.glyphs.isglyphs(font):
@@ -149,6 +150,7 @@ def get_glyph_metrics(font, glyphname, **kwargs):
     metrics["rise"] = get_rise(font, glyphname)
     metrics["run"] = get_run(font, glyphname)
     metrics["rsb"] = metrics["width"] - metrics["xMax"]
+    metrics["fullwidth"] = metrics["xMax"] - metrics["xMin"]
     return metrics
 
 
