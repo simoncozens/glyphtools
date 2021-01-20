@@ -12,7 +12,7 @@ from beziers.path.representations.fontparts import FontParts
 
 __author__ = """Simon Cozens"""
 __email__ = "simon@simon-cozens.org"
-__version__ = "__version__ = '0.6.4'"
+__version__ = "__version__ = '0.7.0'"
 
 
 def categorize_glyph(font, glyphname):
