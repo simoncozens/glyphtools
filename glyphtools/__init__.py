@@ -290,8 +290,10 @@ def get_beziers(font, glyph):
     """
     if glyphtools.glyphs.isglyphs(font):
         return glyphtools.glyphs.beziers(font, glyph)
+    elif glyphtools.babelfont.isbabelfont2(font):
+        return BezierPath.fromDrawable(glyphtools.babelfont.get_glyph(font, glyph))
     elif glyphtools.babelfont.isbabelfont(font):
-        return FontParts.fromFontpartsGlyph(font[glyph])
+        return BezierPath.fromDrawable(font[glyph], font)
     else:
         return BezierPath.fromFonttoolsGlyph(font, glyph)
 
