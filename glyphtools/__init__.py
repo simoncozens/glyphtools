@@ -348,10 +348,12 @@ def determine_kern(
         iterations = iterations + 1
         kern = kern + (targetdistance - min_distance)
 
+    kern = kern -  metrics1["rsb"]
     if maxtuck:
-        kern = max(kern, -(metrics1["width"] * maxtuck))
+        kern = max(kern, -(metrics1["xMax"] * (1+maxtuck)) + metrics1["rsb"])
     else:
-        kern = max(kern, -(metrics1["width"]))
+        kern = max(kern, -(metrics1["xMax"]) + metrics1["rsb"])
+    kern = max(kern, -metrics1["width"])
     return int(kern)
 
 
