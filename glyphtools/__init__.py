@@ -32,7 +32,10 @@ def categorize_glyph(font, glyphname):
     if glyphtools.glyphs.isglyphs(font):
         return glyphtools.glyphs.categorize_glyph(font, glyphname)
     if glyphtools.babelfont.isbabelfont(font):
-        return (font[glyphname].category, None)
+        if glyphtools.babelfont.isbabelfont3(font):
+            return (font.glyphs[glyphname].category, None)
+        else:
+            return (font[glyphname].category, None)
     if "GDEF" not in font:
         return ("unknown", None)
     gdef = font["GDEF"].table

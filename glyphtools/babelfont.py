@@ -1,29 +1,29 @@
 def isbabelfont(font):
     if hasattr(font, "_set_kerning"):  # BBF 1
         return True
-    if isbabelfont2(font):
+    if isbabelfont3(font):
         return True
     return False
 
 
-def isbabelfont2(font):
-    if hasattr(font, "_master_map"):  # BBF 2 Font
+def isbabelfont3(font):
+    if hasattr(font, "_master_map"):  # BBF 3 Font
         return True
-    if hasattr(font, "get_glyph_layer"): # BBF 2 Master
+    if hasattr(font, "get_glyph_layer"): # BBF 3 Master
         return True
     return False
 
 
 def get_glyph(font, glyphname):
-    if hasattr(font, "_master_map"):  # BBF 2 Font
+    if hasattr(font, "_master_map"):  # BBF 3 Font
         return font.default_master.get_glyph_layer(glyphname)
-    if hasattr(font, "get_glyph_layer"): # BBF 2 Master
+    if hasattr(font, "get_glyph_layer"): # BBF 3 Master
         return font.get_glyph_layer(glyphname)
     return font[glyphname]
 
 def get_glyph_metrics(font, glyphname):
     g = get_glyph(font, glyphname)
-    if isbabelfont2(font):
+    if isbabelfont3(font):
         metrics = {"width": g.width, "lsb": g.lsb, "rsb": g.rsb}
     else:
         metrics = {"width": g.width, "lsb": g.leftMargin, "rsb": g.rightMargin}
