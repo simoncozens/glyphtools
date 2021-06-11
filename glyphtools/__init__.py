@@ -162,7 +162,7 @@ def get_rise(font, glyphname, **kwargs):
     if glyphtools.glyphs.isglyphs(font):
         return glyphtools.glyphs.get_rise(font, glyphname, **kwargs)
     if glyphtools.babelfont.isbabelfont(font):
-        return glyphtools.babelfont.get_rise(font[glyphname])
+        return glyphtools.babelfont.get_rise(glyphtools.babelfont.get_glyph(font, glyphname))
     # Find a cursive positioning feature or it's game over
     if "GPOS" not in font:
         return 0
@@ -197,7 +197,7 @@ def get_run(font, glyphname, **kwargs):
     if glyphtools.glyphs.isglyphs(font):
         return glyphtools.glyphs.get_run(font, glyphname, **kwargs)
     if glyphtools.babelfont.isbabelfont(font):
-        return glyphtools.babelfont.get_run(font[glyphname])
+        return glyphtools.babelfont.get_run(glyphtools.babelfont.get_glyph(font, glyphname))
     # Find a cursive positioning feature or it's game over
     width = font["hmtx"][glyphname][0]
     if "GPOS" not in font:
