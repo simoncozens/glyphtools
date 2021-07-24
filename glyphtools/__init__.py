@@ -162,7 +162,9 @@ def get_rise(font, glyphname, **kwargs):
     if glyphtools.glyphs.isglyphs(font):
         return glyphtools.glyphs.get_rise(font, glyphname, **kwargs)
     if glyphtools.babelfont.isbabelfont(font):
-        return glyphtools.babelfont.get_rise(glyphtools.babelfont.get_glyph(font, glyphname))
+        return glyphtools.babelfont.get_rise(
+            glyphtools.babelfont.get_glyph(font, glyphname)
+        )
     # Find a cursive positioning feature or it's game over
     if "GPOS" not in font:
         return 0
@@ -197,7 +199,9 @@ def get_run(font, glyphname, **kwargs):
     if glyphtools.glyphs.isglyphs(font):
         return glyphtools.glyphs.get_run(font, glyphname, **kwargs)
     if glyphtools.babelfont.isbabelfont(font):
-        return glyphtools.babelfont.get_run(glyphtools.babelfont.get_glyph(font, glyphname))
+        return glyphtools.babelfont.get_run(
+            glyphtools.babelfont.get_glyph(font, glyphname)
+        )
     # Find a cursive positioning feature or it's game over
     width = font["hmtx"][glyphname][0]
     if "GPOS" not in font:
@@ -293,8 +297,11 @@ def get_beziers(font, glyph):
     """
     if glyphtools.glyphs.isglyphs(font):
         return glyphtools.glyphs.beziers(font, glyph)
-    elif glyphtools.babelfont.isbabelfont2(font):
-        return BezierPath.fromDrawable(glyphtools.babelfont.get_glyph(font, glyph))
+    elif glyphtools.babelfont.isbabelfont3(font):
+        return BezierPath.fromDrawable(
+            glyphtools.babelfont.get_glyph(font, glyph),
+            {k: font.default_master.get_glyph_layer(k) for k in font.exportedGlyphs()},
+        )
     elif glyphtools.babelfont.isbabelfont(font):
         return BezierPath.fromDrawable(font[glyph], font)
     else:
@@ -351,9 +358,9 @@ def determine_kern(
         iterations = iterations + 1
         kern = kern + (targetdistance - min_distance)
 
-    kern = kern -  metrics1["rsb"]
+    kern = kern - metrics1["rsb"]
     if maxtuck:
-        kern = max(kern, -(metrics1["xMax"] * (1+maxtuck)) + metrics1["rsb"])
+        kern = max(kern, -(metrics1["xMax"] * (1 + maxtuck)) + metrics1["rsb"])
     else:
         kern = max(kern, -(metrics1["xMax"]) + metrics1["rsb"])
     kern = max(kern, -metrics1["width"])
