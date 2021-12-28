@@ -300,7 +300,7 @@ def get_beziers(font, glyph):
     elif glyphtools.babelfont.isbabelfont3(font):
         return BezierPath.fromDrawable(
             glyphtools.babelfont.get_glyph(font, glyph),
-            {k: font.default_master.get_glyph_layer(k) for k in font.exportedGlyphs()},
+            {k: font.default_master.get_glyph_layer(k) for k in font.glyphs.keys()},
         )
     elif glyphtools.babelfont.isbabelfont(font):
         return BezierPath.fromDrawable(font[glyph], font)
